@@ -46,6 +46,10 @@ public:
 	UPROPERTY(EditAnywhere, Category=Projectile)
 	TSubclassOf<class AVeRSeSProjectile> ProjectileClass;
 
+	/** Verses node to spawn **/
+	UPROPERTY(EditAnywhere, Category=Plane)
+	TSubclassOf<class AVersesNode> NodeClass;
+
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	class USoundBase* FireSound;
@@ -54,10 +58,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
+	/* Verses nodes creation distances */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		int NumberOfNodesPerLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		float VersesRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		float XOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		float YOffset;
+
 protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
+
+	/** Prepare the verses **/
+	void OnStartPoem();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);

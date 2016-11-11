@@ -3,6 +3,7 @@
 #include "VeRSeS.h"
 #include "VeRSeSCharacter.h"
 #include "VeRSeSProjectile.h"
+#include "VersesNode.h"
 #include "Animation/AnimInstance.h"
 #include "GameFramework/InputSettings.h"
 
@@ -19,6 +20,12 @@ AVeRSeSCharacter::AVeRSeSCharacter()
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+
+	// set the verses nodes values
+	NumberOfNodesPerLevel = 8;
+	VersesRadius = 400.f;
+	XOffset = 140.f;
+	YOffset = 50.f;
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -75,8 +82,11 @@ void AVeRSeSCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 	//InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AVeRSeSCharacter::TouchStarted);
 	if (EnableTouchscreenMovement(InputComponent) == false)
 	{
-		InputComponent->BindAction("Fire", IE_Pressed, this, &AVeRSeSCharacter::OnFire);
+		//InputComponent->BindAction("Fire", IE_Pressed, this, &AVeRSeSCharacter::OnFire);
 	}
+
+	// Action to start the poem (spawn the nodes)
+	InputComponent->BindAction("Fire", IE_Pressed, this, &AVeRSeSCharacter::OnStartPoem);
 
 	InputComponent->BindAxis("MoveForward", this, &AVeRSeSCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AVeRSeSCharacter::MoveRight);
@@ -98,7 +108,7 @@ void AVeRSeSCharacter::OnFire()
 		const FRotator SpawnRotation = GetControlRotation();
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
 		const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
-
+		
 		UWorld* const World = GetWorld();
 		if (World != NULL)
 		{
@@ -108,10 +118,10 @@ void AVeRSeSCharacter::OnFire()
 	}
 
 	// try and play the sound if specified
-	if (FireSound != NULL)
+	/*if (FireSound != NULL)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
+	}*/
 
 	// try and play a firing animation if specified
 	if (FireAnimation != NULL)
@@ -124,6 +134,140 @@ void AVeRSeSCharacter::OnFire()
 		}
 	}
 
+}
+
+void AVeRSeSCharacter::OnStartPoem()
+{
+	// try and fire a projectile
+	if (NodeClass != NULL)
+	{
+		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+		// const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+
+		int levelNodeCounter1 = 0;
+		int levelNodeCounter2 = 0;// this resets everytime it reaches 8
+		float yawOffset = 180 / (NumberOfNodesPerLevel / 2);
+		float x = 0.f, y = 0.f, z = 400.f, yaw = 0.f, x1 = 0.f, x2 = 0.f, y1 = 0.f, y2 = 0.f;
+
+		for (int i = 0; i < 8; ++i)
+		{
+			
+			if (i == 0) {
+				x1 = 150.f;
+				y1 = -46.f;
+				yaw = 0.f;
+			}
+
+			if (i == 1)
+			{
+				x2 = 150.f;
+				y2 = VersesRadius - 46.f;
+				yaw = 180.f;
+			}
+
+			//UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %f"), levelNodeCounter);
+			//UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel/4 + 1);
+			if (i % 2 == 0 && i != 0) 
+			{
+
+				// check to see if the axis quadrant changes (changes every quarter of the total circle - or of the total number of nodes)
+				if (levelNodeCounter1 < NumberOfNodesPerLevel / 4 + 1)
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 1 one"));
+
+					x1 += XOffset;
+					y1 -= YOffset;
+				}
+				else if (levelNodeCounter1 == 3)
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 2 one "));
+
+					x1 += YOffset;
+					y1 += XOffset;
+				} 
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 3 one"));
+
+					x1 -= YOffset;
+					y1 += XOffset;
+				}
+
+				yaw -= 135.f;
+			}
+			else if (i % 2 != 0 && i != 1)
+			{
+				// check to see if the axis quadrant changes (changes every quarter of the total circle - or of the total number of nodes)
+				if (levelNodeCounter2 < NumberOfNodesPerLevel / 4 + 1)
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 1 one"));
+
+					x2 -= XOffset;
+					y2 -= YOffset;
+				}
+				else if (levelNodeCounter2 == 3)
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 2 one"));
+
+					x2 -= YOffset;
+					y2 -= XOffset;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT(" Hello 3 one"));
+
+					x2 += YOffset;
+					y2 -= XOffset;
+				}
+
+				yaw += 125.f;
+			}
+
+			if (i % 2 == 0) {
+				x = x1;
+				y = y1;
+				++levelNodeCounter1;
+			}
+			else {
+				x = x2;
+				y = y2;
+				++levelNodeCounter2;
+			}
+
+			FRotator SpawnRotation = FRotator(0.f, yaw, 0.f);
+			FVector SpawnLocation = FVector(x, y, z);
+
+			UE_LOG(LogTemp, Warning, TEXT("X: %f"), x);
+			UE_LOG(LogTemp, Warning, TEXT("Y: %f"), y);
+			UE_LOG(LogTemp, Warning, TEXT("Z: %f"), z);
+			UE_LOG(LogTemp, Warning, TEXT(" ----------- "));
+
+
+			UWorld* const World = GetWorld();
+			if (World != NULL)
+			{
+				// spawn the projectile at the muzzle
+				World->SpawnActor<AVersesNode>(NodeClass, SpawnLocation, SpawnRotation);
+			}
+
+			if (levelNodeCounter1 + levelNodeCounter2 == NumberOfNodesPerLevel) {
+				levelNodeCounter1 = 0;
+				levelNodeCounter2 = 0;
+				z += 200.f;
+			}
+		}
+	}
+	
+	// try and play a firing animation if specified
+	if (FireAnimation != NULL)
+	{
+		// Get the animation object for the arms mesh
+		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+		if (AnimInstance != NULL)
+		{
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
+		}
+	}
 }
 
 void AVeRSeSCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
