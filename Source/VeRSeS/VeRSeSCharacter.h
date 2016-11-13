@@ -71,6 +71,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
 		float YOffset;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		float TileSizeX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Verses)
+		float TileSizeZ;
+
 protected:
 	
 	/** Fires a projectile. */

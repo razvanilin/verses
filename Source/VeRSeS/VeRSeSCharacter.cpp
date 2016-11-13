@@ -26,6 +26,8 @@ AVeRSeSCharacter::AVeRSeSCharacter()
 	VersesRadius = 400.f;
 	XOffset = 140.f;
 	YOffset = 50.f;
+	TileSizeX = 1.f;
+	TileSizeZ = 1.f;
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -144,83 +146,99 @@ void AVeRSeSCharacter::OnStartPoem()
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
 		// const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
 
-		int levelNodeCounter1 = 0;
-		int levelNodeCounter2 = 0;// this resets everytime it reaches 8
-		float yawOffset = 180 / (NumberOfNodesPerLevel / 2);
-		float x = 0.f, y = 0.f, z = 400.f, yaw = 0.f, x1 = 0.f, x2 = 0.f, y1 = 0.f, y2 = 0.f;
+		int levelNodeCounter1 = 1;
+		int levelNodeCounter2 = 1;// this resets everytime it reaches 8
+		float yawOffset = 360 / NumberOfNodesPerLevel; // this determines the angle between each consecutive tile
+		int level = 1;
+		float x = 0.f, y = 0.f, z = 200.f, yaw = 0.f, x1 = 0.f, x2 = 0.f, y1 = 0.f, y2 = 0.f;
 
-		for (int i = 0; i < 8; ++i)
+		for (int i = 0; i < 80; ++i)
 		{
-			
-			if (i == 0) {
-				x1 = 150.f;
-				y1 = -46.f;
+			UE_LOG(LogTemp, Warning, TEXT("i: %d"), i);
+			UE_LOG(LogTemp, Warning, TEXT("NumberOfNodesPerLevel: %d"), NumberOfNodesPerLevel * (level - 1));
+			if (i == 0 || NumberOfNodesPerLevel * (level-1) == i) {
+				x1 = XOffset;
+				y1 = -YOffset;
 				yaw = 0.f;
+
 			}
 
-			if (i == 1)
+			if (i == 1 || NumberOfNodesPerLevel * (level-1) == i - 1)
 			{
-				x2 = 150.f;
-				y2 = VersesRadius - 46.f;
+				x2 = XOffset;
+				y2 = VersesRadius - YOffset;
 				yaw = 180.f;
 			}
 
 			//UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %f"), levelNodeCounter);
 			//UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel/4 + 1);
-			if (i % 2 == 0 && i != 0) 
+			if (i % 2 == 0 && i != 0 && NumberOfNodesPerLevel * (level-1) != i) 
 			{
 
 				// check to see if the axis quadrant changes (changes every quarter of the total circle - or of the total number of nodes)
 				if (levelNodeCounter1 < NumberOfNodesPerLevel / 4 + 1)
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 1 one"));
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 1 one"));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter1);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel/4 + 1);*/
 
 					x1 += XOffset;
-					y1 -= YOffset;
+					y1 += YOffset;
 				}
-				else if (levelNodeCounter1 == 3)
+				else if (levelNodeCounter1 == NumberOfNodesPerLevel / 4 + 1)
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 2 one "));
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 2 one "));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter1);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel / 4 + 1);*/
 
 					x1 += YOffset;
 					y1 += XOffset;
 				} 
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 3 one"));
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 3 one"));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter1);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel / 4 + 1);*/
 
 					x1 -= YOffset;
 					y1 += XOffset;
 				}
 
-				yaw -= 135.f;
+				if (yaw != 0.f)
+					yaw = yawOffset * (levelNodeCounter1 - 1);
 			}
-			else if (i % 2 != 0 && i != 1)
+			else if (i % 2 != 0 && i != 1 && NumberOfNodesPerLevel * (level-1) != i - 1)
 			{
 				// check to see if the axis quadrant changes (changes every quarter of the total circle - or of the total number of nodes)
-				if (levelNodeCounter2 < NumberOfNodesPerLevel / 4 + 1)
+				if (levelNodeCounter2  < NumberOfNodesPerLevel / 4 + 1)
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 1 one"));
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 1 two"));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter2);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel / 4 + 1);*/
 
 					x2 -= XOffset;
 					y2 -= YOffset;
 				}
-				else if (levelNodeCounter2 == 3)
+				else if (levelNodeCounter2 == NumberOfNodesPerLevel / 4 + 1)
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 2 one"));
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 2 two"));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter2);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel / 4 + 1);*/
 
 					x2 -= YOffset;
 					y2 -= XOffset;
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT(" Hello 3 one"));
-
+					/*UE_LOG(LogTemp, Warning, TEXT(" Hello 3 two"));
+					UE_LOG(LogTemp, Warning, TEXT("levelNodeCounter: %d"), levelNodeCounter2);
+					UE_LOG(LogTemp, Warning, TEXT("Division: %d"), NumberOfNodesPerLevel / 4 + 1);
+*/
 					x2 += YOffset;
 					y2 -= XOffset;
 				}
 
-				yaw += 125.f;
+				yaw = -180.f + (yawOffset * (levelNodeCounter2 - 1));
 			}
 
 			if (i % 2 == 0) {
@@ -235,11 +253,11 @@ void AVeRSeSCharacter::OnStartPoem()
 			}
 
 			FRotator SpawnRotation = FRotator(0.f, yaw, 0.f);
-			FVector SpawnLocation = FVector(x, y, z);
+			FVector SpawnLocation = FVector(x, y, z * level);
 
 			UE_LOG(LogTemp, Warning, TEXT("X: %f"), x);
 			UE_LOG(LogTemp, Warning, TEXT("Y: %f"), y);
-			UE_LOG(LogTemp, Warning, TEXT("Z: %f"), z);
+			UE_LOG(LogTemp, Warning, TEXT("Z: %f"), z * level);
 			UE_LOG(LogTemp, Warning, TEXT(" ----------- "));
 
 
@@ -247,14 +265,23 @@ void AVeRSeSCharacter::OnStartPoem()
 			if (World != NULL)
 			{
 				// spawn the projectile at the muzzle
-				World->SpawnActor<AVersesNode>(NodeClass, SpawnLocation, SpawnRotation);
+				AVersesNode* Node = World->SpawnActor<AVersesNode>(NodeClass, SpawnLocation, SpawnRotation);
+				Node->SetText(FString::FormatAsNumber(i));
+				Node->SetTileSize(TileSizeX, 0.15f, TileSizeZ);
 			}
 
-			if (levelNodeCounter1 + levelNodeCounter2 == NumberOfNodesPerLevel) {
-				levelNodeCounter1 = 0;
-				levelNodeCounter2 = 0;
-				z += 200.f;
+			if ((levelNodeCounter1 + levelNodeCounter2) == NumberOfNodesPerLevel + 2) {
+				levelNodeCounter1 = 1;
+				levelNodeCounter2 = 1;
+				x = 0.f, y = 0.f, yaw = 0.f, x1 = 0.f, x2 = 0.f, y1 = 0.f, y2 = 0.f;
+				++level;
 			}
+
+			/*if (NumberOfNodesPerLevel % (i + 1) == 0) {
+				levelNodeCounter1 = 1;
+				levelNodeCounter2 = 1;// this resets everytime it reaches 8
+				x = 0.f, y = 0.f, yaw = 0.f, x1 = 0.f, x2 = 0.f, y1 = 0.f, y2 = 0.f;
+			}*/
 		}
 	}
 	

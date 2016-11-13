@@ -12,12 +12,16 @@ class AVersesNode : public AActor
 
 		/* Box collision component */
 		UPROPERTY(VisibleDefaultsOnly, Category=Plane)
-		class USphereComponent* CollisionComp;
+		class UBoxComponent* CollisionComp;
 
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		class URotatingMovementComponent* RotatingMovement;
-	
+
+	/* Text overlay component*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Text, meta = (AllowPrivateAccess = "true"))
+	class UTextRenderComponent* TextComp;
+
 public:	
 	// Sets default values for this actor's properties
 	AVersesNode();
@@ -28,7 +32,11 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+	void SetText(FString text);
+
+	void SetTileSize(float sizeX, float sizeY, float sizeZ);
+
 	/** Returns CollisionComp subobject **/
-	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	FORCEINLINE class UBoxComponent* GetCollisionComp() const { return CollisionComp; }
 	
 };
